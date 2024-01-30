@@ -23,7 +23,7 @@ stealth(driver,
         fix_hairline=True,
         )
 
-url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=earbuds&_sacat=0&_pgn=3"
+url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=car+parts&_sacat=0&_ipg=240"
 
 driver.get(url)
 
@@ -57,7 +57,7 @@ ELEMENT_CLASS = "s-item__info clearfix"
 
 product_list = []
 
-while True:
+while len(product_list) <= 2500:
     try:
         elements = driver.find_elements(By.XPATH, f"//*[@class='{ELEMENT_CLASS}']")
 
@@ -75,6 +75,8 @@ while True:
                 decorate(title_element, "highlight")
 
                 product_list.append(dict)
+
+                print(f"\n\n[*] Total {len(product_list)}/2500 products scrapped...", end='\r')
 
             except:
                 print(f"[!] Couldn't find any a tag or title for {item} product!")
