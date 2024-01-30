@@ -11,7 +11,6 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.5',
     'Referer': 'https://www.amazon.com/',
     'Connection': 'keep-alive',
-    # Add any other headers you need
 }
 
 response = requests.get(url, headers=headers)

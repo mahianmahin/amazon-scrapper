@@ -1,23 +1,31 @@
 import csv
+import time
 from datetime import datetime
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-
-url = "https://www.amazon.com/s?k=earbuds&i=electronics-accessories&ref=nb_sb_noss"
-# url = "https://www.amazon.com/s?k=earbuds&i=electronics-accessories"
-# url = "https://www.amazon.com/s?k=earbuds&i=movies-tv-intl-ship&ref=nb_sb_noss"
+from selenium_stealth import stealth
 
 options = webdriver.ChromeOptions()
-options.add_argument('user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Safari/14.1.1')
-options.add_argument(f"Referer={'https://www.amazon.com/'}")
+options.add_argument("start-maximized")
 
-# options.add_extension("./extensions/Fingerprint.crx")
-# options.add_extension("./extensions/Random.crx")
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option('useAutomationExtension', False)
 
 driver = webdriver.Chrome(options=options)
-driver.get(url)
 
+stealth(driver,
+        languages=["en-US", "en"],
+        vendor="Google Inc.",
+        platform="Win32",
+        webgl_vendor="Intel Inc.",
+        renderer="Intel Iris OpenGL Engine",
+        fix_hairline=True,
+        )
+
+url = "https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2334524.m570.l1313&_nkw=earbuds&_sacat=0&_odkw=earphones&_osacat=0"
+
+driver.get(url)
 
 def scroll(element):
     driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center'});", element)
@@ -43,11 +51,14 @@ def current_date_time():
     return formatted_date_time
 
 
+ELEMENT_CLASS = 's-item__info clearfix'
+
+
 product_list = []
 
 while True:
     try:
-        elements = driver.find_elements(By.XPATH, "//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal']")
+        elements = driver.find_elements(By.XPATH, f"//*[@class='{ELEMENT_CLASS}']")
     except:
         print("\n[-] some error occured!")
 
