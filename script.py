@@ -57,7 +57,25 @@ ELEMENT_CLASS = "s-item__info clearfix"
 
 product_list = []
 
-while len(product_list) <= 2500:
+def init_csv(file_name):
+    fieldnames = ['Product URL', 'Product Title']
+
+    with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+def append_to_csv(file_name, data):
+    with open(file_name, 'a', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(data.values())
+
+init_csv("list.csv")
+
+scrape_range = int(input("Enter the scrape range >> "))
+
+print("[+] Deamon started\n")
+
+while len(product_list) <= scrape_range:
     try:
         elements = driver.find_elements(By.XPATH, f"//*[@class='{ELEMENT_CLASS}']")
 
@@ -76,7 +94,9 @@ while len(product_list) <= 2500:
 
                 product_list.append(dict)
 
-                print(f"\n\n[*] Total {len(product_list)}/2500 products scrapped...", end='\r')
+                append_to_csv("list.csv", dict)
+
+                print(f"[*] Collected {len(product_list)} product's information...", end="\r")
 
             except:
                 print(f"[!] Couldn't find any a tag or title for {item} product!")
@@ -97,10 +117,8 @@ while len(product_list) <= 2500:
     except:
         print("[!] Couldn't find any product listing element!")
 
-
-date_time = current_date_time()
-write_to_csv(product_list, f"products_list.csv")
+# write_to_csv(product_list, f"products_list.csv")
 
 print("[+] made it to the end without any error! :)")
 
-input()
+input("\nPress any key to exit.")

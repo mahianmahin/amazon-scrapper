@@ -146,14 +146,14 @@ for item in url:
         title_div = soup.find('div', class_=['vim x-item-title'])
         product["Name"] = (title_div.text).strip()
     except:
-        print(f"[!] Could not find the title for this product! - {item}")
+        pass
 
     # finding the price for the product
     try:
         price_div = soup.find('div', 'x-price-primary')
         product["Regular price"] = extract_numbers(price_div.text)
     except:
-        print(f"[!] Could not find the price for this product! - {item}")
+        pass
     
     # finding the gellary images for the product
     try:
@@ -167,7 +167,10 @@ for item in url:
         gallery_list = []
 
         for image in image_set:
-            gallery_list.append(image.get('src'))
+            image_source = image.get('src')
+            # Skip adding webp images to the gallery_list
+            if image_source and not image_source.lower().endswith('.webp'):
+                gallery_list.append(image_source)
 
         filtered_list = [item for item in gallery_list if item is not None]
         filtered_list.append(main_image)
@@ -177,7 +180,8 @@ for item in url:
         product["Images"] = joined_images
 
     except:
-        print(f"[!] Could not find the gallery images for this product! - {item}")
+        pass
+
 
     # finding the specification info
 
