@@ -58,7 +58,7 @@ ELEMENT_CLASS = "s-item__info clearfix"
 product_list = []
 
 def init_csv(file_name):
-    fieldnames = ['Product URL', 'Product Title']
+    fieldnames = ['Product URL', 'Product Title', 'Current URL']
 
     with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -93,6 +93,8 @@ while len(product_list) <= scrape_range:
                 decorate(title_element, "highlight")
 
                 product_list.append(dict)
+
+                dict["current_url"] = driver.current_url
 
                 append_to_csv("list.csv", dict)
 
