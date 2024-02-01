@@ -1,16 +1,14 @@
-import base64
 import csv
-import html
 import random
 import re
 import string
-import zlib
 
 import requests
 from bs4 import BeautifulSoup
 
 category = input("Please insert the category >> ")
 url_file = input("Input filename >> ")
+output_file = input("Output filename >> ")
 
 url = []
 
@@ -106,7 +104,7 @@ def append_to_csv(file_name, data):
         writer = csv.writer(csvfile)
         writer.writerow(data.values())
 
-init_csv("final.csv")
+init_csv(output_file)
 
 print("\n")
 
@@ -121,7 +119,7 @@ for item in url:
     product["Product Link"] = item
     product["Name"] = ""
     product["Published"] = 1
-    product["Is Featured?"] = 0
+    product["Is featured?"] = 0
     product["Visibility in catalog"] = "visible"
     product["Regular price"] = ""
     product["Images"] = ""
@@ -156,6 +154,8 @@ for item in url:
         pass
     
     # finding the gellary images for the product
+
+
     try:
         gallery_images_div = soup.find('div', class_=['ux-image-grid-container', 'filmstrip', 'filmstrip-x'])
         image_set = gallery_images_div.find_all('img')
@@ -168,10 +168,13 @@ for item in url:
 
         for image in image_set:
             image_source = image.get('src')
-            # Skip adding webp images to the gallery_list
-            if image_source and not image_source.lower().endswith('.webp'):
-                gallery_list.append(image_source)
+            # Allow webp images in the gallery_list
+            if image_source:
+                # Replace the size part in the image URL using regular expression
+                modified_image_source = re.sub(r'/s-l\d+', '/s-l960', image_source)
+                gallery_list.append(modified_image_source)
 
+        # Main image will remain unchanged
         filtered_list = [item for item in gallery_list if item is not None]
         filtered_list.append(main_image)
 
@@ -181,6 +184,53 @@ for item in url:
 
     except:
         pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # try:
+    #     gallery_images_div = soup.find('div', class_=['ux-image-grid-container', 'filmstrip', 'filmstrip-x'])
+    #     image_set = gallery_images_div.find_all('img')
+
+    #     main_image_div = soup.find('div', class_=['ux-image-carousel-item', 'image-treatment', 'active', 'image'])
+    #     main_image_section = main_image_div.find('img')
+    #     main_image = main_image_section.get('src')
+
+    #     gallery_list = []
+
+    #     for image in image_set:
+    #         image_source = image.get('src')
+    #         # Skip adding webp images to the gallery_list
+    #         if image_source and not image_source.lower().endswith('.webp'):
+    #             gallery_list.append(image_source)
+
+    #     filtered_list = [item for item in gallery_list if item is not None]
+    #     filtered_list.append(main_image)
+
+    #     joined_images = ', '.join(item for item in filtered_list)
+
+    #     product["Images"] = joined_images
+
+    # except:
+    #     pass
+
+
+
+
+
+
+
 
 
     # finding the specification info
@@ -227,7 +277,7 @@ for item in url:
         pass
 
     product_list.append(product)
-    append_to_csv("final.csv", product)
+    append_to_csv(output_file, product)
 
 print("Done")
 
