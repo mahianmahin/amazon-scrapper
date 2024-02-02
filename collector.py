@@ -118,17 +118,21 @@ def init_csv(file_name):
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
+appended_products = []
+
 def append_to_csv(file_name, data):
-    with open(file_name, 'a', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(data.values())
+    if 'Description' in data and data['Description']:  # Check if 'Description' is not empty
+        with open(file_name, 'a', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(data.values())
+            appended_products.append(data)
 
 init_csv(output_file)
 
 print("\n")
 
 for item in url:
-    print(f"[*] Scrapped {len(product_list)} products...", end='\r')
+    print(f"[*] Scrapped {len(appended_products)} products...", end='\r')
 
     product = {}
     specification_dict = {}
@@ -240,13 +244,8 @@ for item in url:
             label = pair.find('div', 'ux-labels-values__labels')
             values = pair.find('div', 'ux-labels-values__values')
 
-            if "manufacturer" not in (label.text).lower():
-                specification_dict[label.text] = values.text
-            elif "mpn" not in (label.text).lower():
-                specification_dict[label.text] = values.text
-            elif "country" not in (label.text).lower():
-                specification_dict[label.text] = values.text
-            elif "part number" not in (label.text).lower():
+            exclude_words = ["region", "manufacturer", "mpn", "country", "part number"]
+            if not any(word in label.text.lower() for word in exclude_words):
                 specification_dict[label.text] = values.text
 
             if label.text == "Brand":
