@@ -23,7 +23,8 @@ stealth(driver,
         fix_hairline=True,
         )
 
-url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=car+parts&_sacat=0&_ipg=240"
+
+url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=tyres&_sacat=0&_fsrp=1&LH_BIN=1&LH_ItemCondition=1000&LH_FS=1&rt=nc&_udlo=70&_udhi=500&_ipg=240"
 
 driver.get(url)
 
@@ -69,9 +70,10 @@ def append_to_csv(file_name, data):
         writer = csv.writer(csvfile)
         writer.writerow(data.values())
 
-init_csv("list.csv")
-
 scrape_range = int(input("Enter the scrape range >> "))
+output_file_name = input("Enter output filename >> ")
+
+init_csv(output_file_name)
 
 print("[+] Deamon started\n")
 
@@ -96,7 +98,7 @@ while len(product_list) <= scrape_range:
 
                 dict["current_url"] = driver.current_url
 
-                append_to_csv("list.csv", dict)
+                append_to_csv(output_file_name, dict)
 
                 print(f"[*] Collected {len(product_list)} product's information...", end="\r")
 
