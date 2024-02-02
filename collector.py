@@ -188,6 +188,8 @@ for item in url:
         # URL to skip
         skip_image_url = "https://i.ebayimg.com/images/g/DOcAAOSw8NplLtwK/s-l960.webp"
         skip_image_url_2 = "https://i.ebayimg.com/images/g/DOcAAOSw8NplLtwK/s-l960.jpg"
+        skip_image_url_3 = "https://i.ebayimg.com/images/g/DOcAAOSw8NplLtwK/s-l960.png"
+        skip_image_url_4 = "https://i.ebayimg.com/images/g/DOcAAOSw8NplLtwK/s-l960.gif"
 
         for image in image_set:
             image_source = image.get('src')
@@ -209,6 +211,16 @@ for item in url:
             filtered_list.remove(skip_image_url_2)
         except:
             pass
+        
+        try:
+            filtered_list.remove(skip_image_url_3)
+        except:
+            pass
+        
+        try:
+            filtered_list.remove(skip_image_url_4)
+        except:
+            pass
 
         joined_images = ', '.join(item for item in filtered_list)
 
@@ -228,8 +240,15 @@ for item in url:
             label = pair.find('div', 'ux-labels-values__labels')
             values = pair.find('div', 'ux-labels-values__values')
 
-            specification_dict[label.text] = values.text
-            
+            if "manufacturer" not in (label.text).lower():
+                specification_dict[label.text] = values.text
+            elif "mpn" not in (label.text).lower():
+                specification_dict[label.text] = values.text
+            elif "country" not in (label.text).lower():
+                specification_dict[label.text] = values.text
+            elif "part number" not in (label.text).lower():
+                specification_dict[label.text] = values.text
+
             if label.text == "Brand":
                 product['Brand'] = values.text
             if label.text == "Color":
