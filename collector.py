@@ -86,7 +86,26 @@ def extract_text(soup):
     # Join lines with <br> tags
     text_content = '<br>'.join(unique_lines)
 
-    return text_content
+    return 
+
+def format_description(input_dict):
+    html_list = "<h4>Specifications of the product:</h4><br><span>This product comes with all these below specifications and conditions</span><br><ul>"
+    
+    for key, value in input_dict.items():
+        html_list += f"<li><strong>{key.capitalize()}: </strong> {str(value)}</li>"
+
+    html_list += "</ul>"
+
+    # Remove specified words in a case-insensitive manner
+    words_to_remove = ["read", "more", "about", "moreabout"]
+    for word in words_to_remove:
+        html_list = re.sub(fr'\b{re.escape(word)}\b', "", html_list, flags=re.IGNORECASE)
+
+    # Remove specified characters
+    characters_to_remove = ";,#$@&%'\""
+    html_list = re.sub(f"[{re.escape(characters_to_remove)}]", " ", html_list)
+
+    return html_list
 
 product_list = []
 
@@ -112,6 +131,7 @@ for item in url:
     print(f"[*] Scrapped {len(product_list)} products...", end='\r')
 
     product = {}
+    specification_dict = {}
 
     product["ID"] = random.randint(500, 900000)
     product["Type"] = "simple"
@@ -155,7 +175,6 @@ for item in url:
     
     # finding the gellary images for the product
 
-
     try:
         gallery_images_div = soup.find('div', class_=['ux-image-grid-container', 'filmstrip', 'filmstrip-x'])
         image_set = gallery_images_div.find_all('img')
@@ -166,10 +185,14 @@ for item in url:
 
         gallery_list = []
 
+        # URL to skip
+        skip_image_url = "https://i.ebayimg.com/images/g/DOcAAOSw8NplLtwK/s-l960.webp"
+        skip_image_url_2 = "https://i.ebayimg.com/images/g/DOcAAOSw8NplLtwK/s-l960.jpg"
+
         for image in image_set:
             image_source = image.get('src')
             # Allow webp images in the gallery_list
-            if image_source:
+            if image_source and image_source != skip_image_url:
                 # Replace the size part in the image URL using regular expression
                 modified_image_source = re.sub(r'/s-l\d+', '/s-l960', image_source)
                 gallery_list.append(modified_image_source)
@@ -177,6 +200,15 @@ for item in url:
         # Main image will remain unchanged
         filtered_list = [item for item in gallery_list if item is not None]
         filtered_list.append(main_image)
+        try:
+            filtered_list.remove(skip_image_url)
+        except:
+            pass
+
+        try:
+            filtered_list.remove(skip_image_url_2)
+        except:
+            pass
 
         joined_images = ', '.join(item for item in filtered_list)
 
@@ -184,53 +216,6 @@ for item in url:
 
     except:
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # try:
-    #     gallery_images_div = soup.find('div', class_=['ux-image-grid-container', 'filmstrip', 'filmstrip-x'])
-    #     image_set = gallery_images_div.find_all('img')
-
-    #     main_image_div = soup.find('div', class_=['ux-image-carousel-item', 'image-treatment', 'active', 'image'])
-    #     main_image_section = main_image_div.find('img')
-    #     main_image = main_image_section.get('src')
-
-    #     gallery_list = []
-
-    #     for image in image_set:
-    #         image_source = image.get('src')
-    #         # Skip adding webp images to the gallery_list
-    #         if image_source and not image_source.lower().endswith('.webp'):
-    #             gallery_list.append(image_source)
-
-    #     filtered_list = [item for item in gallery_list if item is not None]
-    #     filtered_list.append(main_image)
-
-    #     joined_images = ', '.join(item for item in filtered_list)
-
-    #     product["Images"] = joined_images
-
-    # except:
-    #     pass
-
-
-
-
-
-
-
 
 
     # finding the specification info
@@ -242,6 +227,8 @@ for item in url:
         for pair in specification_pair:
             label = pair.find('div', 'ux-labels-values__labels')
             values = pair.find('div', 'ux-labels-values__values')
+
+            specification_dict[label.text] = values.text
             
             if label.text == "Brand":
                 product['Brand'] = values.text
@@ -253,6 +240,8 @@ for item in url:
                 product['Model Name'] = values.text
             if label.text == "Features":
                 product['Features'] = values.text
+
+        product["Description"] = format_description(specification_dict)
 
     except:
         pass
@@ -268,7 +257,7 @@ for item in url:
 
         sanitized_description = sanitize_description(frame_content)
         extracted_text = extract_text(frame_content)
-        product["Description"] = str(extracted_text)
+        # product["Description"] = str(extracted_text)
 
         # print(product["Description"])
 
@@ -278,6 +267,7 @@ for item in url:
 
     product_list.append(product)
     append_to_csv(output_file, product)
+
 
 print("Done")
 
