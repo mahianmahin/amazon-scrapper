@@ -14,6 +14,22 @@ url = []
 
 print("\n")
 
+def open_source(file_path):
+    result_list = []
+
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            result_list = list(reader)
+    except FileNotFoundError:
+        print(f"Error: File not found - {file_path}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+    return result_list
+
+source_file = open_source(url_file)
+
 with open(url_file, 'r', encoding='utf-8') as csvfile:
     reader = csv.DictReader(csvfile)
     count = 0
@@ -36,28 +52,6 @@ headers = {
     'Connection': 'keep-alive',
 }
 
-def sanitize_description(soup):
-    symbols_to_skip = {',', ';', '-', ':'}
-
-    # Extract tags with text, excluding those with specified symbols
-    tags_with_text = [
-        tag for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'ul', 'ol', 'li'])
-        if tag.get_text(strip=True) and not any(symbol in tag.get_text(strip=True) for symbol in symbols_to_skip)
-    ]
-
-    extracted_html = ''.join(str(tag) for tag in tags_with_text)
-
-    return extracted_html
-
-
-def create_csv(data, file_name):
-    fieldnames = data[0].keys()
-
-    with open(file_name, 'a', newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for item in data:
-            writer.writerow(item)
 
 
 def generate_random_sku(length=8, prefix="SKU"):
@@ -73,22 +67,12 @@ def extract_numbers(text):
         return numbers[0]
     return None
 
-def extract_text(soup):
-    # Define tags to consider
-    tags_to_extract = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'ul', 'ol', 'li']
 
-    # Extract text content from selected tags
-    unique_lines = set()
-    for tag in soup.find_all(tags_to_extract):
-        text = tag.get_text(strip=True).replace(',', ' ')
-        unique_lines.add(text)
-
-    # Join lines with <br> tags
-    text_content = '<br>'.join(unique_lines)
-
-    return 
 
 def format_description(input_dict):
+
+    # print(input_dict)
+
     html_list = "<h4>Specifications of the product:</h4><br><span>This product comes with all these below specifications and conditions</span><br><ul>"
     
     for key, value in input_dict.items():
@@ -104,6 +88,8 @@ def format_description(input_dict):
     # Remove specified characters
     characters_to_remove = ";,#$@&%'\""
     html_list = re.sub(f"[{re.escape(characters_to_remove)}]", " ", html_list)
+
+    # print("==========\n\n", html_list)
 
     return html_list
 
@@ -121,23 +107,23 @@ def init_csv(file_name):
 appended_products = []
 
 def append_to_csv(file_name, data):
-    if 'Description' in data and data['Description']:  # Check if 'Description' is not empty
-        with open(file_name, 'a', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(data.values())
-            appended_products.append(data)
+    with open(file_name, 'a', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(data.values())
+        appended_products.append(data)
 
 init_csv(output_file)
 
 print("\n")
 
 for item in url:
+    # print(f"[*] Total went through {len(product_list)} products...", end='\r')
     print(f"[*] Scrapped {len(appended_products)} products...", end='\r')
 
     product = {}
     specification_dict = {}
 
-    product["ID"] = random.randint(500, 900000)
+    product["ID"] = source_file[url.index(item)]["ID"]
     product["Type"] = "simple"
     product["SKU"] = generate_random_sku()
     product["Product Link"] = item
@@ -240,47 +226,30 @@ for item in url:
         specification_part = soup.find('div', 'vim x-about-this-item')
         specification_pair = specification_part.find_all('div', 'ux-layout-section-evo__col')
 
-        for pair in specification_pair:
-            label = pair.find('div', 'ux-labels-values__labels')
-            values = pair.find('div', 'ux-labels-values__values')
+        labels = specification_part.find_all('div', 'ux-labels-values__labels')
+        values = specification_part.find_all('div', 'ux-labels-values__values')
 
-            exclude_words = ["region", "manufacturer", "mpn", "country", "part number"]
-            if not any(word in label.text.lower() for word in exclude_words):
-                specification_dict[label.text] = values.text
+        exclude_words = ["manufacturer", "mpn", "country", "part number"]
 
+        for label, value in zip(labels, values):
+            specification_dict[label.text] = value.text
+        
             if label.text == "Brand":
-                product['Brand'] = values.text
-            if label.text == "Color":
-                product['Color'] = values.text
-            if label.text == "Model":
-                product['Model'] = values.text
-            if label.text == "Model Name":
-                product['Model Name'] = values.text
-            if label.text == "Features":
-                product['Features'] = values.text
+                product['Brand'] = value.text
+            elif label.text == "Color":
+                product['Color'] = value.text
+            elif label.text == "Model":
+                product['Model'] = value.text
+            elif label.text == "Model Name":
+                product['Model Name'] = value.text
+            elif label.text == "Features":
+                product['Features'] = value.text
+
+        specification_dict = {key: value for key, value in specification_dict.items() if not any(word in key.lower() for word in exclude_words)}
 
         product["Description"] = format_description(specification_dict)
 
     except:
-        pass
-
-    # finding description for the product
-    try:
-        description_div = soup.find('div', 'vim d-item-description')
-        frame = description_div.find('iframe')
-
-        frame_src = frame.get('src')
-        frame_response = requests.get(frame_src)
-        frame_content = BeautifulSoup(frame_response.text, "html.parser")
-
-        sanitized_description = sanitize_description(frame_content)
-        extracted_text = extract_text(frame_content)
-        # product["Description"] = str(extracted_text)
-
-        # print(product["Description"])
-
-    except:
-        # print(f"[!] could not find the description for the product! - {item}")
         pass
 
     product_list.append(product)

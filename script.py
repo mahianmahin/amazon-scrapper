@@ -1,4 +1,5 @@
 import csv
+import random
 import time
 from datetime import datetime
 
@@ -59,7 +60,7 @@ ELEMENT_CLASS = "s-item__info clearfix"
 product_list = []
 
 def init_csv(file_name):
-    fieldnames = ['Product URL', 'Product Title', 'Current URL']
+    fieldnames = ['ID', 'Product URL', 'Product Title', 'Current URL']
 
     with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -85,6 +86,8 @@ while len(product_list) <= scrape_range:
             dict = {}
 
             try:
+                dict["ID"] = random.randint(500, 900000)
+                
                 a_element = item.find_element(By.TAG_NAME, "a")
                 dict["product_url"] = a_element.get_property('href')
 
