@@ -25,7 +25,7 @@ stealth(driver,
         )
 
 
-url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=tyres&_sacat=0&_fsrp=1&LH_BIN=1&LH_ItemCondition=1000&LH_FS=1&rt=nc&_udlo=70&_udhi=500&_ipg=240"
+url = "https://www.ebay.com/b/Exterior-Parts-Accessories/33637?Country%252FRegion%2520of%2520Manufacture=United%2520States&rt=nc&mag=1&LH_BIN=1&LH_ItemCondition=1000&_udlo=50&LH_PrefLoc=1"
 
 driver.get(url)
 

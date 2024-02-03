@@ -224,12 +224,16 @@ for item in url:
 
     try:
         specification_part = soup.find('div', 'vim x-about-this-item')
+        # specification_part = soup.find('div', 'ux-layout-section-evo ux-layout-section--features')
         specification_pair = specification_part.find_all('div', 'ux-layout-section-evo__col')
 
-        labels = specification_part.find_all('div', 'ux-labels-values__labels')
-        values = specification_part.find_all('div', 'ux-labels-values__values')
+        # labels = specification_part.find_all('div', 'ux-labels-values__labels')
+        # values = specification_part.find_all('div', 'ux-labels-values__values')
+        
+        labels = specification_part.find_all('div', 'ux-labels-values__labels-content')
+        values = specification_part.find_all('div', 'ux-labels-values__values-content')
 
-        exclude_words = ["manufacturer", "mpn", "country", "part number"]
+        exclude_words = ["manufacturer", "mpn", "country", "part number", "ean", "upc"]
 
         for label, value in zip(labels, values):
             specification_dict[label.text] = value.text
