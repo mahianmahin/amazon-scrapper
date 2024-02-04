@@ -24,8 +24,10 @@ stealth(driver,
         fix_hairline=True,
         )
 
+url = input("Enter the URL >> ")
+url.strip()
 
-url = "https://www.ebay.com/b/Exterior-Parts-Accessories/33637?Country%252FRegion%2520of%2520Manufacture=United%2520States&rt=nc&mag=1&LH_BIN=1&LH_ItemCondition=1000&_udlo=50&LH_PrefLoc=1"
+# url = "https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2334524.m570.l1313&_nkw=Bluetooth+Speakers&_sacat=0&_udlo=100&_odkw=Blenders+and+smoothie+makers&_osacat=0&_ipg=240"
 
 driver.get(url)
 
@@ -102,6 +104,9 @@ while len(product_list) <= scrape_range:
                 dict["current_url"] = driver.current_url
 
                 append_to_csv(output_file_name, dict)
+
+                if len(product_list) >= scrape_range:
+                    break
 
                 print(f"[*] Collected {len(product_list)} product's information...", end="\r")
 
